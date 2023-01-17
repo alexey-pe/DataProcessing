@@ -1,5 +1,5 @@
 ﻿
-data = open("D:\planning\operations\Масса_тела.txt", "r")
+data = open(r"D:\planning\operations\Масса_тела.txt", "r")
 total = 0.0
 count = 0
 shitTotal = 0.0
@@ -27,11 +27,10 @@ for line in data.readlines():
 
     weightNumber = float(weightStr)
     weightNumbers.append(weightNumber)
-    total = total + weightNumber
-    count += 1
-    # print(weightNumber, count, total)
+    total += weightNumber
+    # print(weightNumber, len(weightNumbers), total)
 
-print(f"Average equals {round(total / count, 2)}")
+print(f"Average equals {round(total / len(weightNumbers), 2)}")
 
 print(f"Total shit equals {round(shitTotal, 2)}")
 
