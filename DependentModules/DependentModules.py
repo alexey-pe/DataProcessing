@@ -10,13 +10,10 @@ def main():
 
     obtain_input(domainInputFileName, frameworkInputFileName)
 
-    # with open('csv_input/' + domainInputFileName) as normfile:
-    #     for line in normfile:
-    #         print(line)
-
     records = load_csv(domainInputFileName, frameworkInputFileName)
 
-    # records = scrub_records(records)
+    ignored_dependencies = ['Barco', 'Contracts', 'Framework']
+    scrub_records(records, ignored_dependencies)
 
     dependencies = group_dependencies(records)
 
@@ -35,7 +32,7 @@ def normalize(filename):
     # Matches e.g.:
     # Error	CS0234	The type or namespace name '
     # Error	CS0103	The name '
-    errorpattern = "Error\s+CS[0-9]{4}\s+The[a-z ]+name '"
+    errorpattern = r"Error\s+CS[0-9]{4}\s+The[a-z ]+name '"
 
     def GetFirstSingleQuotesContents(message: str) -> str:
         begin = message.find("'") + 1
@@ -78,6 +75,17 @@ def load_csv(*filenames):
     return records
 
 
+def scrub_records(records, ignored_dependencies):
+    i = 0
+    while i < len(records):
+        dependency = records[i][1]
+        if any(ignored == dependency for ignored in ignored_dependencies):
+            records.pop(i)
+            continue
+
+        i += 1
+
+
 def group_dependencies(records):
     dependencies = {}
     for record in records:
@@ -89,6 +97,7 @@ def group_dependencies(records):
             dependencies[dependency] = modules
 
         modules.add(module)
+
     return dependencies
 
 
@@ -97,6 +106,7 @@ def format_output(dependencies, out_file):
         for dependency in dependencies.keys():
             modules = ", ".join(sorted(dependencies[dependency]))
             out.write(f"{dependency}: {modules}\n")
+
 
 if __name__ == '__main__':
     main()
