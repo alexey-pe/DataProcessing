@@ -3,30 +3,30 @@ import re
 
 
 def main():
-    domain_dependencies = 'Maquet.Domain.Barco.Contracts_Advanced-Find-Usages_and-Textual-Occurrences - ' +\
+    domain_references = 'Maquet.Domain.Barco.Contracts_Advanced-Find-Usages_and-Textual-Occurrences - ' +\
                           'with-errors-when-reference-to-Barco-is-removed.txt'
-    framework_dependencies = 'Maquet.Domain.BARCO-n-Contracts_Dependent-Modules - ' +\
+    framework_references = 'Maquet.Domain.BARCO-n-Contracts_Dependent-Modules - ' +\
                              'with-errors-when-reference-to-BARCO-is-removed.txt'
 
-    obtain_input(domain_dependencies, framework_dependencies)
+    obtain_input(domain_references, framework_references)
 
-    records = load_csv(domain_dependencies, framework_dependencies)
+    records = load_csv(domain_references, framework_references)
 
-    ignored_dependencies = ['Barco', 'Contracts', 'Framework']
-    scrub_records(records, ignored_dependencies)
+    ignored_references = ['Barco', 'Contracts', 'Framework']
+    scrub_records(records, ignored_references)
 
     dependencies = group_dependencies(records)
 
     format_output(dependencies, "out.txt")
 
 
-def obtain_input(*files):
-    for file in files:
-        references = normalize('raw_input/' + file)
-        save_normalized(references, 'csv_input/' + file)
+def obtain_input(*filenames):
+    for filename in filenames:
+        references = normalize('raw_input/' + filename)
+        save_normalized(references, 'csv_input/' + filename)
 
 
-def normalize(filename):
+def normalize(filepath):
     module_pattern = r"\+\<(.*)\>"
 
     # Matches e.g.:
@@ -41,7 +41,7 @@ def normalize(filename):
 
     modulename = None
     dependencies = []
-    with open(filename) as file:
+    with open(filepath) as file:
         for line in file:
             match = re.search(module_pattern, line)
             if match:
@@ -56,8 +56,8 @@ def normalize(filename):
     return dependencies
 
 
-def save_normalized(references, filename):
-    with open(filename, 'w', newline='') as csvfile:
+def save_normalized(references, filepath):
+    with open(filepath, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         for line in references:
             csvwriter.writerow(line)
@@ -75,11 +75,11 @@ def load_csv(*filenames):
     return records
 
 
-def scrub_records(records, ignored_dependencies):
+def scrub_records(records, ignored_references):
     i = 0
     while i < len(records):
-        dependency = records[i][1]
-        if any(ignored == dependency for ignored in ignored_dependencies):
+        reference = records[i][1]
+        if any(ignored == reference for ignored in ignored_references):
             records.pop(i)
             continue
 
@@ -89,11 +89,11 @@ def scrub_records(records, ignored_dependencies):
 def group_dependencies(records):
     dependencies = {}
     for record in records:
-        (module, dependency) = record
-        modules = dependencies.get(dependency)
+        (module, reference) = record
+        modules = dependencies.get(reference)
         if modules is None:
             modules = set()
-            dependencies[dependency] = modules
+            dependencies[reference] = modules
 
         modules.add(module)
 
