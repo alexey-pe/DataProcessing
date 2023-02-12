@@ -104,8 +104,8 @@ def format_output(dependencies, out_file):
     with open(out_file, 'w') as out:
         for dependency in sorted(dependencies.keys()):
             modules = dependencies[dependency]
-            sorted_modules_list1 = "\n\t".join(sorted(modules))
-            out.write(f"{dependency}:\n\t{sorted_modules_list1}\n\n")
+            sorted_modules_list = "\n\t".join(sorted(modules))
+            out.write(f"{dependency}:\n\t{sorted_modules_list}\n\n")
 
 
 if __name__ == '__main__':
