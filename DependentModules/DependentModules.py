@@ -1,6 +1,7 @@
 import csv
 import re
 
+
 def main():
     domainInputFileName = 'Maquet.Domain.Barco.Contracts_Advanced-Find-Usages_and-Textual-Occurrences - ' +\
                           'with-errorrs-when-reference-to-Barco-is-removed.txt'
@@ -9,15 +10,23 @@ def main():
 
     obtain_input(domainInputFileName, frameworkInputFileName)
 
-    with open('csv_input/' + domainInputFileName) as normfile:
-        for line in normfile:
-            print(line)
+    # with open('csv_input/' + domainInputFileName) as normfile:
+    #     for line in normfile:
+    #         print(line)
+
+    records = load_csv(domainInputFileName, frameworkInputFileName)
+
+    # records = scrub_records(records)
+
+    dependencies = group_dependencies(records)
+
+    format_output(dependencies, "out.txt")
 
 
 def obtain_input(*infiles):
     for infile in infiles:
-        domainReferences = normalize('raw_input/' + infile)
-        save_normalized(domainReferences, 'csv_input/' + infile)
+        references = normalize('raw_input/' + infile)
+        save_normalized(references, 'csv_input/' + infile)
 
 
 def normalize(filename):
@@ -56,6 +65,38 @@ def save_normalized(references, filename):
         for line in references:
             csvwriter.writerow(line)
 
+
+def load_csv(*filenames):
+    records = []
+    for filename in filenames:
+        with open('csv_input/' + filename) as csvfile:
+            csvreader = csv.reader(csvfile)
+            for line in csvreader:
+                record = (line[0], line[1])
+                records.append(record)
+
+    return records
+
+
+def group_dependencies(records):
+    dependencies = {}
+    for record in records:
+        module = record[0]
+        dependency = record[1]
+        modules = dependencies.get(dependency)
+        if modules is None:
+            modules = set()
+            dependencies[dependency] = modules
+
+        modules.add(module)
+    return dependencies
+
+
+def format_output(dependencies, out_file):
+    with open(out_file, 'w') as out:
+        for dependency in dependencies.keys():
+            modules = ", ".join(sorted(dependencies[dependency]))
+            out.write(f"{dependency}: {modules}\n")
 
 if __name__ == '__main__':
     main()
