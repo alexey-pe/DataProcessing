@@ -102,9 +102,10 @@ def group_dependencies(records):
 
 def format_output(dependencies, out_file):
     with open(out_file, 'w') as out:
-        for dependency in dependencies.keys():
-            modules = ", ".join(sorted(dependencies[dependency]))
-            out.write(f"{dependency}: {modules}\n")
+        for dependency in sorted(dependencies.keys()):
+            modules = dependencies[dependency]
+            sorted_modules_list1 = "\n\t".join(sorted(modules))
+            out.write(f"{dependency}:\n\t{sorted_modules_list1}\n\n")
 
 
 if __name__ == '__main__':
