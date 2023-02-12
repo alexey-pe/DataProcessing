@@ -3,14 +3,14 @@ import re
 
 
 def main():
-    domainInputFileName = 'Maquet.Domain.Barco.Contracts_Advanced-Find-Usages_and-Textual-Occurrences - ' +\
-                          'with-errorrs-when-reference-to-Barco-is-removed.txt'
-    frameworkInputFileName = 'Maquet.Domain.BARCO-n-Contracts_Dependent-Modules - ' +\
+    domain_dependencies = 'Maquet.Domain.Barco.Contracts_Advanced-Find-Usages_and-Textual-Occurrences - ' +\
+                          'with-errors-when-reference-to-Barco-is-removed.txt'
+    framework_dependencies = 'Maquet.Domain.BARCO-n-Contracts_Dependent-Modules - ' +\
                              'with-errors-when-reference-to-BARCO-is-removed.txt'
 
-    obtain_input(domainInputFileName, frameworkInputFileName)
+    obtain_input(domain_dependencies, framework_dependencies)
 
-    records = load_csv(domainInputFileName, frameworkInputFileName)
+    records = load_csv(domain_dependencies, framework_dependencies)
 
     ignored_dependencies = ['Barco', 'Contracts', 'Framework']
     scrub_records(records, ignored_dependencies)
@@ -20,38 +20,38 @@ def main():
     format_output(dependencies, "out.txt")
 
 
-def obtain_input(*infiles):
-    for infile in infiles:
-        references = normalize('raw_input/' + infile)
-        save_normalized(references, 'csv_input/' + infile)
+def obtain_input(*files):
+    for file in files:
+        references = normalize('raw_input/' + file)
+        save_normalized(references, 'csv_input/' + file)
 
 
 def normalize(filename):
-    modulepattern = r"\+\<(.*)\>"
+    module_pattern = r"\+\<(.*)\>"
 
     # Matches e.g.:
     # Error	CS0234	The type or namespace name '
     # Error	CS0103	The name '
-    errorpattern = r"Error\s+CS[0-9]{4}\s+The[a-z ]+name '"
+    error_pattern = r"Error\s+CS[0-9]{4}\s+The[a-z ]+name '"
 
-    def GetFirstSingleQuotesContents(message: str) -> str:
+    def get_first_quoted_substring(message: str) -> str:
         begin = message.find("'") + 1
         end = message.find("'", begin)
         return message[begin:end]
 
     modulename = None
     dependencies = []
-    with open(filename) as rawfile:
-        for line in rawfile:
-            modulematch = re.search(modulepattern, line)
-            if modulematch:
-                modulename = modulematch.group(1)
+    with open(filename) as file:
+        for line in file:
+            match = re.search(module_pattern, line)
+            if match:
+                modulename = match.group(1)
                 continue
 
-            if not re.match(errorpattern, line):
+            if not re.match(error_pattern, line):
                 continue
 
-            dependencies.append([modulename, GetFirstSingleQuotesContents(line)])
+            dependencies.append([modulename, get_first_quoted_substring(line)])
 
     return dependencies
 
@@ -89,8 +89,7 @@ def scrub_records(records, ignored_dependencies):
 def group_dependencies(records):
     dependencies = {}
     for record in records:
-        module = record[0]
-        dependency = record[1]
+        (module, dependency) = record
         modules = dependencies.get(dependency)
         if modules is None:
             modules = set()
